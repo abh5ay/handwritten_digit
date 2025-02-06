@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        h2 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 30px;
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="file"] {
+            background-color: #333;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            color: #fff;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            padding: 12px 20px;
+            color: white;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #image-preview {
+            margin-top: 20px;
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 20px;
+            }
+
+            .container {
+                padding: 20px;
+                width: 90%;
+            }
+
+            input[type="file"],
+            button {
+                width: 100%;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload an Image of a Handwritten Digit</h2>
+    <div class="container">
+        <input type="file" id="upload" accept="image/*" onchange="previewImage()">
+        <button onclick="uploadImage()">Predict</button>
+        <img id="image-preview" src="" alt="Image Preview" style="display: none;">
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function previewImage() {
+            const fileInput = document.getElementById('upload');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function() {
+                const imgPreview = document.getElementById('image-preview');
+                imgPreview.src = reader.result;
+                imgPreview.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('image-preview').style.display = 'none';
+            }
+        }
+
+        async function uploadImage() {
+            let fileInput = document.getElementById('upload');
+            let formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                let result = await response.json();
+                document.getElementById('result').innerText = "Prediction: " + result.prediction;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerText = "Error: Failed to fetch data";
+            }
+        }
+    </script>
+</body>
+</html>
